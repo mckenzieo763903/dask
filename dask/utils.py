@@ -219,7 +219,7 @@ def _deprecated_kwarg(
             "mapping from old to new argument values must be dict or callable!"
         )
 
-    comment = f"\n{comment}" or ""
+    comment = f"\n{comment}" if comment else ""
 
     def _deprecated_kwarg(func: F) -> F:
         @wraps(func)
@@ -254,7 +254,7 @@ def _deprecated_kwarg(
                         f"use {repr(new_arg_name)} instead."
                     )
 
-                warnings.warn(msg + comment, FutureWarning, stacklevel=stacklevel)
+                warnings.warn((msg + comment) if comment else msg, FutureWarning, stacklevel=stacklevel)
                 if kwargs.get(new_arg_name) is not None:
                     msg = (
                         f"Can only specify {repr(old_arg_name)} "
@@ -1024,10 +1024,14 @@ def funcname(func) -> str:
 
     # toolz.curry
     if "toolz" in module_name and "curry" == type_name:
-        return func.func_name[:50]
+        func_name = getattr(func, "func_name", None)
+        if func_name is not None:
+            return func_name[:50]
     # multipledispatch objects
     if "multipledispatch" in module_name and "Dispatcher" == type_name:
-        return func.name[:50]
+        name = getattr(func, "name", None)
+        if name is not None:
+            return name[:50]
     # numpy.vectorize objects
     if "numpy" in module_name and "vectorize" == type_name:
         return ("vectorize_" + funcname(func.pyfunc))[:50]
@@ -2284,7 +2288,7 @@ class shorten_traceback:
         exc_val: BaseException | None,
         exc_tb: types.TracebackType | None,
     ) -> None:
-        if exc_val and exc_tb:
+        if exc_val and exc_tb is not None:
             exc_val.__traceback__ = self.shorten(exc_tb)
 
     @staticmethod
