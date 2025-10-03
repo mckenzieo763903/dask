@@ -1643,7 +1643,6 @@ def _custom_quantile(
             q,
             axis=axis,
             method=method,
-            interpolation=interpolation,
             keepdims=keepdims,
             **kwargs,
         )
@@ -1747,7 +1746,6 @@ def nanquantile(
         kwargs = {
             "q": q,
             "method": method,
-            "interpolation": interpolation,
             "keepdims": keepdims,
         }
         if NUMPY_GE_200:

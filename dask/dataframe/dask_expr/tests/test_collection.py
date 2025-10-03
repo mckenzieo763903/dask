@@ -2007,7 +2007,7 @@ def test_assign_simplify(pdf):
     expected = df2[["x"]].assign(new=df2.x > 1).simplify()
     assert result._name == expected._name
 
-    pdf["new"] = pdf.x > 1
+    pdf = pdf.assign(new=pdf.x > 1)
     assert_eq(pdf[["x", "new"]], result)
 
 
@@ -2019,7 +2019,7 @@ def test_assign_simplify_new_column_not_needed(pdf):
     expected = df2[["x"]].simplify()
     assert result._name == expected._name
 
-    pdf["new"] = pdf.x > 1
+    pdf = pdf.assign(new=pdf.x > 1)
     assert_eq(result, pdf[["x"]])
 
 
@@ -2043,12 +2043,10 @@ def test_assign_non_series_inputs(df, pdf):
 
 
 def test_assign_squash_together(df, pdf):
-    df["a"] = 1
-    df["b"] = 2
+    df = df.assign(a=1, b=2)
     result = df.simplify()
     assert len([x for x in list(result.expr.walk()) if isinstance(x, expr.Assign)]) == 1
-    pdf["a"] = 1
-    pdf["b"] = 2
+    pdf = pdf.assign(a=1, b=2)
     assert_eq(df, pdf)
     assert "Assign: a=1, b=2" in [line for line in result.expr._tree_repr_lines()]
 
@@ -2112,7 +2110,7 @@ def test_can_co_align(df, pdf):
     q = (df.x + df.y).optimize(fuse=False)
     assert_eq(q, pdf.x + pdf.y)
 
-    pdf["z"] = 100
+    pdf = pdf.assign(z=100)
     df2 = from_pandas(pdf, npartitions=df.npartitions * 2)
     assert df.npartitions != df2.npartitions
     assert_eq(df.x + df.y, pdf.x + pdf.y)
@@ -2184,8 +2182,8 @@ def test_columns_setter(df, pdf):
     df.columns = ["a", "b"]
     result = df[["a"]]
     pdf.columns = ["a", "b"]
-    expecetd = pdf[["a"]]
-    assert_eq(result, expecetd)
+    expected = pdf[["a"]]
+    assert_eq(result, expected)
 
     with pytest.raises(ValueError, match="Length mismatch"):
         df.columns = [1, 2, 3]
@@ -2218,7 +2216,7 @@ def test_filter_pushdown(df, pdf):
     result = df[df.x > 5].simplify()
     assert result._name == expected._name
 
-    pdf["z"] = 1
+    pdf = pdf.assign(z=1)
     df = from_pandas(pdf, npartitions=10)
     df2 = df.rename_axis(index="hello")
     result = df2[df2.x > 5][["x", "y"]].simplify()

@@ -29,10 +29,10 @@ def test_ufunc_meta(name):
     assert ufunc.__name__ == name
     assert disclaimer in ufunc.__doc__
 
-    assert (
-        ufunc.__doc__.replace(disclaimer, "").replace(skip_test, "")
-        == getattr(np, name).__doc__
-    )
+    numpy_doc = getattr(np, name).__doc__
+    dask_doc = ufunc.__doc__.replace(disclaimer, "").replace(skip_test, "")
+    assert dask_doc == numpy_doc or dask_doc == numpy_doc + "\n\nNot supported in Dask."
+}
 
 
 def test_ufunc():

@@ -204,7 +204,10 @@ class Shuffle(ShuffleBase):
         # Reduce partition count if necessary
         frame = self.frame
         npartitions_out = self.npartitions_out
-        method = self.method or get_default_shuffle_method()
+        try:
+            method = self.method or get_default_shuffle_method()
+        except ImportError:
+            method = self.method or "tasks"
 
         if npartitions_out < frame.npartitions and method != "p2p":
             frame = Repartition(frame, new_partitions=npartitions_out)
